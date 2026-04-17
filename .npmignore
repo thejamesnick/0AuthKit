@@ -1,0 +1,7 @@
+src/
+*.test.ts
+tsconfig.json
+SPEC.md
+STACK.md
+HACKLEARN.md
+TODO.txt

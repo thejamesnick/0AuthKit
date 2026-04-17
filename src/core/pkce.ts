@@ -8,7 +8,7 @@ function base64UrlEncode(buffer: ArrayBuffer): string {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
-export async function generateCodeVerifier(): Promise<string> {
+export function generateCodeVerifier(): string {
   const buffer = new Uint8Array(32)
   crypto.getRandomValues(buffer)
   return base64UrlEncode(buffer.buffer)

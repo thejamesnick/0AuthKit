@@ -1,0 +1,35 @@
+{
+  "name": "0authkit",
+  "version": "0.1.0",
+  "description": "Add OAuth to any app in minutes. Bring your own credentials.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./server": {
+      "import": "./dist/server.js",
+      "types": "./dist/server.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest --run"
+  },
+  "keywords": ["oauth", "auth", "google", "github", "sdk", "authentication"],
+  "author": "thejamesnick",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.4"
+  }
+}

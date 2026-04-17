@@ -4,8 +4,8 @@ import type { ProviderConfig, Profile } from '../types.js'
 function normalizeProfile(raw: Record<string, unknown>): Profile {
   return {
     id: String(raw.id ?? ''),
-    email: String(raw.email ?? ''),
-    name: String(raw.name ?? raw.login ?? ''),
+    email: raw.email != null ? String(raw.email) : '',
+    name: raw.name != null ? String(raw.name) : String(raw.login ?? ''),
     avatar: raw.avatar_url ? String(raw.avatar_url) : null,
     raw,
   }
