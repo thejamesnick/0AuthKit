@@ -1,0 +1,34 @@
+
+0AuthKit — TODO
+===============
+
+PHASE 1 (shipping now)
+-----------------------
+[ ] src/types.ts — all shared types
+[ ] src/core/pkce.ts — Web Crypto PKCE (verifier, challenge, state)
+[ ] src/core/auth.ts — getAuthUrl() with PKCE + state
+[ ] src/core/callback.ts — handleCallback() token exchange + profile fetch
+[ ] src/providers/google.ts — Google config + profile normalizer
+[ ] src/providers/github.ts — GitHub config + profile normalizer
+[ ] src/client.ts — browser-safe entry (getAuthUrl only)
+[ ] src/server.ts — server-only entry (handleCallback)
+[ ] src/index.ts — full OAuthKit class + re-exports
+[ ] package.json — exports map for client/server entry points
+[ ] tsconfig.json
+[ ] README.md — usage for all 4 environments
+[ ] Test Google flow end to end
+[ ] Test GitHub flow end to end
+[ ] npm publish
+
+PHASE 2
+--------
+[ ] Token refresh — refreshToken() helper
+[ ] React hooks — useOAuth(), useProfile()
+[ ] More providers: Twitter/X, Discord, Apple, Facebook
+[ ] SaaS providers: Slack, Notion, Linear, Atlassian
+
+PHASE 3
+--------
+[ ] Session/cookie helpers (optional, bring your own still default)
+[ ] CLI scaffold — `npx 0authkit init` to generate boilerplate for Express/Next
+[ ] Provider playground — test your credentials in the browser
