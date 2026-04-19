@@ -7,7 +7,7 @@
 ## Project health (honest status)
 
 - ✅ Build passes
-- ⚠️ No automated tests committed yet
+- ✅ Basic automated tests (core auth + callback security checks)
 - ✅ Core flow implemented: auth URL, token exchange, profile fetch
 - ✅ State validation support (pass `expectedState` in callback)
 

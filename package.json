@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest --run"
+    "test": "vitest --run --exclude \"dist/**\""
   },
   "keywords": ["oauth", "auth", "google", "github", "sdk", "authentication"],
   "author": "thejamesnick",
