@@ -39,6 +39,7 @@ export interface CallbackResult {
 export interface HandleCallbackOptions extends OAuthConfig {
   code: string
   state?: string
+  expectedState?: string
   codeVerifier?: string  // required if PKCE was used
 }
 
