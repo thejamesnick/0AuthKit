@@ -78,6 +78,17 @@ export async function handleCallback(config: HandleCallbackOptions): Promise<Cal
   }
 
   const provider = getProvider(config.provider)
+  if (config.expectedState !== undefined) {
+    if (!config.state) {
+      throw new Error('Missing state in callback')
+    }
+    if (config.state !== config.expectedState) {
+      throw new Error('Invalid OAuth state')
+    }
+  }
+  if (provider.supportsPkce && !config.codeVerifier) {
+    throw new Error('codeVerifier is required for PKCE providers')
+  }
   const tokens = await exchangeToken(provider, config)
   const raw = await fetchProfile(provider, tokens.accessToken)
   const profile = provider.normalizeProfile(raw)

@@ -1,10 +1,17 @@
 # 0AuthKit
 
-> HACK #2 — thejamesnick HACK Series
+> Add OAuth to apps fast, with minimal boilerplate.
 
-Add OAuth to any app in minutes. Bring your own credentials — 0AuthKit handles the rest.
+0AuthKit gives you a small TypeScript SDK for Google + GitHub OAuth flows.
 
-Works in **Node.js**, **Express**, **Next.js**, **React**, and plain **browser**. Zero dependencies.
+## Project health (honest status)
+
+- ✅ Build passes
+- ⚠️ No automated tests committed yet
+- ✅ Core flow implemented: auth URL, token exchange, profile fetch
+- ✅ State validation support (pass `expectedState` in callback)
+
+So: solid mini-hack foundation, but add tests before calling it production-grade.
 
 ---
 
@@ -16,40 +23,9 @@ npm install 0authkit
 
 ---
 
-## Get Your Credentials
+## 60-second integration (server-side)
 
-You need a `clientId` and `clientSecret` from each provider you want to use. 0AuthKit never stores or manages these — they stay in your env vars.
-
-### Google
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create a project → APIs & Services → Credentials
-3. Create OAuth 2.0 Client ID → Web application
-4. Add your redirect URI (e.g. `http://localhost:3000/auth/callback`)
-5. Copy `Client ID` and `Client Secret`
-
-```env
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
-```
-
-### GitHub
-
-1. Go to [github.com/settings/developers](https://github.com/settings/developers)
-2. New OAuth App
-3. Set Homepage URL and Authorization callback URL
-4. Copy `Client ID` and generate a `Client Secret`
-
-```env
-GITHUB_CLIENT_ID=your-client-id
-GITHUB_CLIENT_SECRET=your-client-secret
-```
-
----
-
-## Usage
-
-### Node.js / Express
+### 1) Create kit
 
 ```ts
 import { OAuthKit } from '0authkit'
@@ -60,120 +36,91 @@ const kit = new OAuthKit({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
   redirectUri: 'http://localhost:3000/auth/callback',
 })
+```
 
-// 1. Redirect user to provider
-app.get('/auth/google', (req, res) => {
-  const { url, state } = kit.getAuthUrl()
+### 2) Redirect user
+
+```ts
+app.get('/auth/google', async (req, res) => {
+  const { url, state, codeVerifier } = await kit.getAuthUrl()
   req.session.oauthState = state
+  req.session.oauthCodeVerifier = codeVerifier
   res.redirect(url)
 })
+```
 
-// 2. Handle the callback
+### 3) Handle callback
+
+```ts
 app.get('/auth/callback', async (req, res) => {
-  const { code, state } = req.query
-  const result = await kit.handleCallback(code as string, state as string)
+  const result = await kit.handleCallback(
+    String(req.query.code),
+    String(req.query.state)
+  )
 
-  console.log(result.profile)  // { id, email, name, avatar, raw }
+  // Recommended: use server functional API for explicit state/codeVerifier checks
+  // import { handleCallback } from '0authkit/server'
+  // const result = await handleCallback({
+  //   provider: 'google',
+  //   code: String(req.query.code),
+  //   state: String(req.query.state),
+  //   expectedState: req.session.oauthState,
+  //   codeVerifier: req.session.oauthCodeVerifier,
+  //   clientId: process.env.GOOGLE_CLIENT_ID!,
+  //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+  //   redirectUri: 'http://localhost:3000/auth/callback',
+  // })
+
   res.json(result.profile)
 })
 ```
 
-### Next.js App Router
+---
+
+## Best-practice callback (recommended)
+
+Use `0authkit/server` so you can validate state and PKCE verifier explicitly.
 
 ```ts
-// app/api/auth/google/route.ts
-import { OAuthKit } from '0authkit'
+import { getAuthUrl, handleCallback } from '0authkit/server'
 
-const kit = new OAuthKit({
-  provider: 'google',
-  clientId: process.env.GOOGLE_CLIENT_ID!,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  redirectUri: 'https://myapp.com/auth/callback',
+app.get('/auth/google', async (req, res) => {
+  const { url, state, codeVerifier } = await getAuthUrl({
+    provider: 'google',
+    clientId: process.env.GOOGLE_CLIENT_ID!,
+    redirectUri: 'http://localhost:3000/auth/callback',
+  })
+
+  req.session.oauthState = state
+  req.session.oauthCodeVerifier = codeVerifier
+  res.redirect(url)
 })
 
-export async function GET() {
-  const { url, state } = kit.getAuthUrl()
-  const res = Response.redirect(url)
-  res.headers.set('Set-Cookie', `oauth_state=${state}; HttpOnly; Path=/`)
-  return res
-}
-```
-
-```ts
-// app/api/auth/callback/route.ts
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const result = await kit.handleCallback(
-    searchParams.get('code')!,
-    searchParams.get('state')!
-  )
-  return Response.json(result.profile)
-}
-```
-
-### React (client-side, no backend)
-
-> Uses PKCE — no clientSecret needed. Google only (GitHub doesn't support PKCE).
-
-```tsx
-import { getAuthUrl } from '0authkit/client'
-
-function LoginButton() {
-  const handleLogin = () => {
-    const { url, state } = getAuthUrl({
-      provider: 'google',
-      clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      redirectUri: `${window.location.origin}/auth/callback`,
-    })
-    sessionStorage.setItem('oauth_state', state)
-    window.location.href = url
-  }
-
-  return <button onClick={handleLogin}>Sign in with Google</button>
-}
-```
-
-### Plain Browser
-
-```html
-<script type="module">
-  import { getAuthUrl } from 'https://cdn.jsdelivr.net/npm/0authkit/dist/client.js'
-
-  const { url, state } = getAuthUrl({
-    provider: 'github',
-    clientId: 'YOUR_CLIENT_ID',
-    redirectUri: 'https://myapp.com/callback',
+app.get('/auth/callback', async (req, res) => {
+  const result = await handleCallback({
+    provider: 'google',
+    code: String(req.query.code),
+    state: String(req.query.state),
+    expectedState: req.session.oauthState,
+    codeVerifier: req.session.oauthCodeVerifier,
+    clientId: process.env.GOOGLE_CLIENT_ID!,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    redirectUri: 'http://localhost:3000/auth/callback',
   })
-  sessionStorage.setItem('oauth_state', state)
-  window.location.href = url
-</script>
+
+  res.json(result.profile)
+})
 ```
 
 ---
 
-## Result Shape
+## Entry points
 
-```ts
-result.tokens   // { accessToken, refreshToken?, expiresIn, tokenType }
-result.profile  // { id, email, name, avatar, raw }
-result.raw      // full provider payload — pick whatever you need
-```
-
-### Google raw payload includes
-`sub`, `email`, `email_verified`, `name`, `picture`, `locale`, `hd` (GSuite domain), and more.
-
-### GitHub raw payload includes
-`id`, `login`, `name`, `email`, `avatar_url`, `bio`, `company`, `location`, `public_repos`, `followers`, and more.
-
----
-
-## Entry Points
-
-| Import | Use when |
+| Import | Use |
 |---|---|
-| `0authkit` | Server-side — full class API |
-| `0authkit/client` | Browser / React — `getAuthUrl()` only, no secret needed |
-| `0authkit/server` | Server-side — functional API, `handleCallback()` |
+| `0authkit` | Class-based server API |
+| `0authkit/server` | Functional server API (`getAuthUrl`, `handleCallback`) |
+| `0authkit/client` | Client-safe `getAuthUrl` only |
 
 ---
 
@@ -181,23 +128,27 @@ result.raw      // full provider payload — pick whatever you need
 
 | Provider | Status | PKCE |
 |---|---|---|
-| Google | ✅ Phase 1 | ✅ |
-| GitHub | ✅ Phase 1 | ❌ |
-| Twitter/X | 🔜 Phase 2 | — |
-| Discord | 🔜 Phase 2 | — |
-| Slack | 🔜 Phase 2 | — |
-| Notion | 🔜 Phase 2 | — |
+| Google | ✅ | ✅ |
+| GitHub | ✅ | ❌ |
 
 ---
 
-## Security
+## Security notes
 
-- Your `clientSecret` never touches the browser
-- PKCE via Web Crypto API — no extra deps
-- State param on every auth URL — CSRF protection
-- All provider URLs hardcoded HTTPS
-- Nothing logged or persisted
+- Keep `clientSecret` on server only.
+- Always persist + validate `state` (`expectedState`).
+- For PKCE providers, persist + reuse `codeVerifier`.
+- Use HTTPS in production.
 
 ---
 
-Built by [thejamesnick](https://github.com/thejamesnick) — HACK Series #2
+## Output shape
+
+```ts
+result.tokens  // { accessToken, refreshToken?, expiresIn?, tokenType, scope? }
+result.profile // { id, email, name, avatar, raw }
+```
+
+---
+
+Built by [thejamesnick](https://github.com/thejamesnick)

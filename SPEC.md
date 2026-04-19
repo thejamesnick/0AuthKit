@@ -39,8 +39,7 @@ Meta angle: *"I got tired of copy-pasting OAuth boilerplate into every project"*
 | `0authkit/server` | Node.js, Edge runtime | `handleCallback()` — token exchange + profile fetch. Needs clientSecret. |
 | `0authkit` | Node.js only | Full class-based API (backwards compat, server-side only) |
 
-> The clientSecret **never touches the browser**. Token exchange always happens server-side.
-> For pure client-side apps (no backend), Google's PKCE-only flow is supported — no clientSecret required.
+> The clientSecret **never touches the browser**. Token exchange happens server-side.
 
 ---
 
@@ -115,6 +114,8 @@ const result = await handleCallback({
   provider: 'google',
   code,
   state,
+  expectedState, // compare against value stored in session/cookie
+  codeVerifier,  // required for PKCE providers (e.g. Google)
   clientId: process.env.GOOGLE_CLIENT_ID!,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
   redirectUri: 'https://myapp.com/auth/callback',
@@ -167,7 +168,7 @@ interface Profile {
 
 ## 🔒 Security
 
-- **State param** — generated on every `getAuthUrl()` call, validated in `handleCallback()` to prevent CSRF
+- **State param** — generated on every `getAuthUrl()` call, validate by passing `expectedState` into `handleCallback()` to prevent CSRF
 - **PKCE** — used for Google (and any provider that supports it) — code verifier stored in memory, challenge sent in auth URL
 - **No credential storage** — clientId/clientSecret only used in-memory during token exchange, never logged or persisted
 - **HTTPS only** — all provider URLs are hardcoded HTTPS, no HTTP fallback
