@@ -48,16 +48,31 @@ res.redirect(url)
 
 ---
 
-## `codeVerifier is required for PKCE providers`
+## `codeVerifier` and PKCE
 
-**Cause:** You're using Google (which requires PKCE) but didn't pass `codeVerifier` to `handleCallback`.
+PKCE is optional in 0AuthKit. If you pass `codeVerifier` to `handleCallback`, it will be used in the token exchange. If you don't, it falls back to a standard code exchange.
 
-**Fix:** Store `codeVerifier` from `getAuthUrl` in your session:
+**With PKCE (recommended for Google):**
 
 ```ts
 const { url, state, codeVerifier } = await kit.getAuthUrl()
 req.session.oauthState = state
-req.session.oauthCodeVerifier = codeVerifier // ← required for Google
+req.session.oauthCodeVerifier = codeVerifier // store it
+
+// In callback:
+const result = await handleCallback(code, state, {
+  codeVerifier: req.session.oauthCodeVerifier, // pass it back
+})
+```
+
+**Without PKCE (standard flow):**
+
+```ts
+const { url, state } = await kit.getAuthUrl()
+req.session.oauthState = state
+
+// In callback — no codeVerifier needed:
+const result = await handleCallback(code, state)
 ```
 
 Then pass it on callback. If you're using the `OAuthKit` class this happens automatically — just make sure `getAuthUrl` and `handleCallback` are called on the same instance within the same process.
