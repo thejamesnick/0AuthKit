@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { generateCodeVerifier, generateCodeChallenge, generateState } from './pkce.js'
+import { generateCodeVerifier, generateCodeChallenge, generateState } from '../../src/core/pkce.js'
 
 // base64url alphabet — no +, /, or = padding
 const BASE64URL_RE = /^[A-Za-z0-9\-_]+$/

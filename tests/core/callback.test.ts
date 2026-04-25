@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { handleCallback } from './callback.js'
+import { handleCallback } from '../../src/core/callback.js'
 
 // ---------------------------------------------------------------------------
 // Helpers

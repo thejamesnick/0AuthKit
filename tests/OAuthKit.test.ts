@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { OAuthKit } from './index.js'
+import { OAuthKit } from '../src/index.js'
 
 // ---------------------------------------------------------------------------
 // Helpers

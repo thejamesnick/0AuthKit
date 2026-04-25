@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { githubProvider } from './github.js'
+import { githubProvider } from '../../src/providers/github.js'
 
 // ---------------------------------------------------------------------------
 // Provider config

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getAuthUrl } from './auth.js'
+import { getAuthUrl } from '../../src/core/auth.js'
 
 // ---------------------------------------------------------------------------
 // Google

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { googleProvider } from './google.js'
+import { googleProvider } from '../../src/providers/google.js'
 
 // ---------------------------------------------------------------------------
 // Provider config
