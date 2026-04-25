@@ -5,6 +5,12 @@ All notable changes to 0AuthKit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-04-25
+
+### Fixed
+
+- PKCE is now optional, not required — `codeVerifier` no longer throws when omitted for PKCE providers (e.g. Google). If provided it's used, if not it falls back to a standard code exchange. This allows clients that don't use PKCE to still work with `handleCallback`.
+
 ## [1.0.0] - 2026-04-25
 
 ### Added

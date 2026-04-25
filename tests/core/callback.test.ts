@@ -93,44 +93,72 @@ describe('handleCallback — validation errors', () => {
     ).rejects.toThrow('Invalid OAuth state')
   })
 
-  it('passes state validation when state matches expectedState (then fails on PKCE check)', async () => {
-    await expect(
-      handleCallback({
-        provider: 'google',
-        code: 'code',
-        state: 'good-state',
-        expectedState: 'good-state',
-        clientId: 'client-id',
-        clientSecret: 'client-secret',
-        redirectUri: 'http://localhost:3000/auth/callback',
-      })
-    ).rejects.toThrow('codeVerifier is required for PKCE providers')
+  it('passes state validation when state matches expectedState', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(GOOGLE_TOKEN))
+        .mockResolvedValueOnce(jsonResponse(GOOGLE_PROFILE)),
+    )
+
+    const result = await handleCallback({
+      provider: 'google',
+      code: 'code',
+      state: 'good-state',
+      expectedState: 'good-state',
+      clientId: 'client-id',
+      clientSecret: 'client-secret',
+      redirectUri: 'http://localhost:3000/auth/callback',
+    })
+
+    expect(result.profile.email).toBe('user@example.com')
   })
 
-  it('throws when a PKCE provider callback omits codeVerifier', async () => {
-    await expect(
-      handleCallback({
-        provider: 'google',
-        code: 'code',
-        clientId: 'client-id',
-        clientSecret: 'client-secret',
-        redirectUri: 'http://localhost:3000/auth/callback',
-      })
-    ).rejects.toThrow('codeVerifier is required for PKCE providers')
+  it('does not throw for missing codeVerifier on Google (PKCE optional)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(GOOGLE_TOKEN))
+        .mockResolvedValueOnce(jsonResponse(GOOGLE_PROFILE)),
+    )
+
+    const result = await handleCallback({
+      provider: 'google',
+      code: 'code',
+      clientId: 'client-id',
+      clientSecret: 'client-secret',
+      redirectUri: 'http://localhost:3000/auth/callback',
+    })
+
+    expect(result.profile.email).toBe('user@example.com')
   })
 
-  it('does not throw for missing codeVerifier on a non-PKCE provider', async () => {
-    // GitHub does not require codeVerifier — it should reach the network (and fail
-    // because fetch is not mocked here), not throw the PKCE guard error
-    await expect(
-      handleCallback({
-        provider: 'github',
-        code: 'code',
-        clientId: 'client-id',
-        clientSecret: 'client-secret',
-        redirectUri: 'http://localhost:3000/auth/callback',
-      })
-    ).rejects.not.toThrow('codeVerifier is required for PKCE providers')
+  it('does not throw for missing codeVerifier on Google (PKCE optional)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ access_token: 'token', token_type: 'Bearer' }))
+        .mockResolvedValueOnce(
+          jsonResponse({
+            sub: 'user-id',
+            email: 'user@example.com',
+            name: 'User',
+          }),
+        ),
+    )
+
+    const result = await handleCallback({
+      provider: 'google',
+      code: 'code',
+      clientId: 'id',
+      clientSecret: 'secret',
+      redirectUri: 'https://example.com/callback',
+    })
+
+    expect(result.profile.email).toBe('user@example.com')
   })
 
   it('throws a descriptive error for an unknown provider', async () => {

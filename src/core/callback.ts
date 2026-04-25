@@ -86,9 +86,8 @@ export async function handleCallback(config: HandleCallbackOptions): Promise<Cal
       throw new Error('Invalid OAuth state')
     }
   }
-  if (provider.supportsPkce && !config.codeVerifier) {
-    throw new Error('codeVerifier is required for PKCE providers')
-  }
+  // PKCE is optional — only send code_verifier if provided
+  // Not all clients use PKCE even if the provider supports it
   const tokens = await exchangeToken(provider, config)
   const raw = await fetchProfile(provider, tokens.accessToken)
   const profile = provider.normalizeProfile(raw)

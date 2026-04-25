@@ -1,6 +1,6 @@
 {
   "name": "0authkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add OAuth to any app in minutes. Bring your own credentials.",
   "type": "module",
   "main": "dist/index.js",
