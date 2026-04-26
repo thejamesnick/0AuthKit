@@ -67,6 +67,26 @@ describe('getAuthUrl — Google', () => {
     expect(new URLSearchParams(new URL(url).search).get('scope')).toBe('email')
   })
 
+  it('includes access_type=offline for Google', async () => {
+    const result = await getAuthUrl({
+      provider: 'google',
+      clientId: 'goog-client-id',
+      redirectUri: 'http://localhost:3000/auth/callback',
+    })
+    const params = new URLSearchParams(new URL(result.url).search)
+    expect(params.get('access_type')).toBe('offline')
+  })
+
+  it('includes include_granted_scopes=true for Google', async () => {
+    const result = await getAuthUrl({
+      provider: 'google',
+      clientId: 'goog-client-id',
+      redirectUri: 'http://localhost:3000/auth/callback',
+    })
+    const params = new URLSearchParams(new URL(result.url).search)
+    expect(params.get('include_granted_scopes')).toBe('true')
+  })
+
   it('generates a unique state on each call', async () => {
     const a = await getAuthUrl({ provider: 'google', clientId: 'id', redirectUri: 'http://localhost:3000' })
     const b = await getAuthUrl({ provider: 'google', clientId: 'id', redirectUri: 'http://localhost:3000' })
@@ -106,6 +126,17 @@ describe('getAuthUrl — GitHub', () => {
     })
     const params = new URLSearchParams(new URL(url).search)
     expect(params.get('scope')).toBe('read:user user:email')
+  })
+
+  it('does not include access_type or include_granted_scopes for GitHub', async () => {
+    const result = await getAuthUrl({
+      provider: 'github',
+      clientId: 'gh-client-id',
+      redirectUri: 'http://localhost:3000/auth/callback',
+    })
+    const params = new URLSearchParams(new URL(result.url).search)
+    expect(params.get('access_type')).toBeNull()
+    expect(params.get('include_granted_scopes')).toBeNull()
   })
 
   it('generates a unique state on each call', async () => {

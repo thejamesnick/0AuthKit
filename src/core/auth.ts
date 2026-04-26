@@ -24,6 +24,12 @@ export async function getAuthUrl(config: OAuthConfig): Promise<AuthUrlResult> {
     state,
   }
 
+  // Required by Google to get a refresh token
+  if (config.provider === 'google') {
+    params.access_type = 'offline'
+    params.include_granted_scopes = 'true'
+  }
+
   let codeVerifier: string | undefined
 
   if (provider.supportsPkce) {
