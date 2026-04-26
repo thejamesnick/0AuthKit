@@ -40,6 +40,8 @@ interface OAuthConfig {
 - Google: `['openid', 'email', 'profile']`
 - GitHub: `['read:user', 'user:email']`
 
+> **Google note:** `access_type=offline` and `include_granted_scopes=true` are automatically added to Google auth URLs. This ensures Google returns a refresh token and supports incremental authorization.
+
 ---
 
 ### `AuthUrlResult`
@@ -66,7 +68,7 @@ interface HandleCallbackOptions extends OAuthConfig {
   code: string             // authorization code from the provider callback
   state?: string           // state param received in the callback URL
   expectedState?: string   // state you stored in step 1 — compared against state
-  codeVerifier?: string    // PKCE verifier stored in step 1 — required for Google
+  codeVerifier?: string    // PKCE verifier stored in step 1 — optional, but recommended for Google
 }
 ```
 
@@ -156,7 +158,6 @@ Validates state (comparing against the stored `lastState` or `options.expectedSt
 - `'clientSecret is required'` — if config has no clientSecret
 - `'Missing state in callback'` — if expectedState is provided but no state came back
 - `'Invalid OAuth state'` — if state does not match expectedState
-- `'codeVerifier is required for PKCE providers'` — for Google without a verifier
 - `'Token exchange failed (STATUS): BODY'` — provider returned an error on token exchange
 - `'Profile fetch failed (STATUS): BODY'` — provider returned an error on profile fetch
 

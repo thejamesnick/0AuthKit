@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Google OAuth 2.0 compliance: added `access_type=offline` to auth URL so Google returns a refresh token
-- Google OAuth 2.0 compliance: added `include_granted_scopes=true` for incremental authorization support
+- Google OAuth 2.0 compliance: `access_type=offline` is now automatically added to Google auth URLs — required for Google to return a refresh token
+- Google OAuth 2.0 compliance: `include_granted_scopes=true` is now automatically added to Google auth URLs — recommended by Google for incremental authorization
 - Neither param is sent for GitHub (not applicable)
+- PKCE (`codeVerifier`) is now optional, not required — removed hard enforcement. If provided it's used in token exchange, if not it falls back to standard code exchange
+- Removed stale `'codeVerifier is required for PKCE providers'` error from API docs
+- Updated security docs: PKCE for Google is now "recommended" not "required"
+- Updated troubleshooting docs: replaced old PKCE error entry with correct optional PKCE guidance
 
 ## [1.0.1] - 2026-04-25
 

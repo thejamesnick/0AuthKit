@@ -67,7 +67,7 @@ req.session.oauthCodeVerifier = codeVerifier
 ```
 
 **PKCE provider support:**
-- Google — ✅ required
+- Google — ✅ supported (recommended — pass `codeVerifier` for best security)
 - GitHub — ❌ not supported by GitHub
 
 ---
